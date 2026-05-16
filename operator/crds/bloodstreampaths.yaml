@@ -1,0 +1,59 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: bloodstreampaths.bloodstream.io
+spec:
+  group: bloodstream.io
+  names:
+    kind: BloodstreamPath
+    listKind: BloodstreamPathList
+    plural: bloodstreampaths
+    singular: bloodstreampath
+    shortNames:
+      - bspath
+  scope: Namespaced
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                services:
+                  type: array
+                  items:
+                    type: string
+                configs:
+                  type: array
+                  items:
+                    type: string
+              required: [services, configs]
+            status:
+              type: object
+              properties:
+                pathVitality:
+                  type: number
+                configVitality:
+                  type: object
+                  additionalProperties:
+                    type: number
+                dormantConfigs:
+                  type: array
+                  items:
+                    type: string
+                lastTopologySync:
+                  type: string
+                  format: date-time
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Vitality
+          type: number
+          jsonPath: .status.pathVitality
+        - name: Dormant
+          type: string
+          jsonPath: .status.dormantConfigs
