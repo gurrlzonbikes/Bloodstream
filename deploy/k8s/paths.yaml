@@ -1,0 +1,21 @@
+apiVersion: bloodstream.io/v1
+kind: BloodstreamPath
+metadata:
+  name: checkout-flow
+  namespace: bloodstream
+spec:
+  services:
+    - frontend
+    - auth
+    - payments
+  configs:
+    - chrome-latest
+    - default-feature-flags
+    - staging-env
+    - safari
+    - firefox
+    - android-low-end
+    - slow-network
+    - feature-flag-alt-checkout
+    - degraded-payment-provider
+    - old-ui-version

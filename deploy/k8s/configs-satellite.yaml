@@ -1,0 +1,102 @@
+# Low-frequency satellite circulation configurations
+apiVersion: bloodstream.io/v1
+kind: BloodstreamConfig
+metadata:
+  name: safari
+  namespace: bloodstream
+spec:
+  browser: webkit
+  trafficClass: satellite
+  circulation:
+    minimumRunsPerWeek: 2
+    dormancyThresholdHours: 72
+  vitality:
+    targetScore: 0.7
+---
+apiVersion: bloodstream.io/v1
+kind: BloodstreamConfig
+metadata:
+  name: firefox
+  namespace: bloodstream
+spec:
+  browser: firefox
+  trafficClass: satellite
+  circulation:
+    minimumRunsPerWeek: 2
+    dormancyThresholdHours: 72
+  vitality:
+    targetScore: 0.7
+---
+apiVersion: bloodstream.io/v1
+kind: BloodstreamConfig
+metadata:
+  name: android-low-end
+  namespace: bloodstream
+spec:
+  browser: chromium
+  trafficClass: satellite
+  circulation:
+    minimumRunsPerWeek: 1
+    dormancyThresholdHours: 96
+  vitality:
+    targetScore: 0.65
+---
+apiVersion: bloodstream.io/v1
+kind: BloodstreamConfig
+metadata:
+  name: slow-network
+  namespace: bloodstream
+spec:
+  browser: chromium
+  networkProfile: slow-3g
+  trafficClass: satellite
+  circulation:
+    minimumRunsPerWeek: 1
+    dormancyThresholdHours: 72
+  vitality:
+    targetScore: 0.7
+---
+apiVersion: bloodstream.io/v1
+kind: BloodstreamConfig
+metadata:
+  name: feature-flag-alt-checkout
+  namespace: bloodstream
+spec:
+  browser: chromium
+  featureFlagProfile: alt-checkout
+  trafficClass: satellite
+  circulation:
+    minimumRunsPerWeek: 1
+    dormancyThresholdHours: 72
+  vitality:
+    targetScore: 0.7
+---
+apiVersion: bloodstream.io/v1
+kind: BloodstreamConfig
+metadata:
+  name: degraded-payment-provider
+  namespace: bloodstream
+spec:
+  browser: chromium
+  featureFlagProfile: degraded
+  trafficClass: satellite
+  circulation:
+    minimumRunsPerWeek: 1
+    dormancyThresholdHours: 96
+  vitality:
+    targetScore: 0.65
+---
+apiVersion: bloodstream.io/v1
+kind: BloodstreamConfig
+metadata:
+  name: old-ui-version
+  namespace: bloodstream
+spec:
+  browser: chromium
+  featureFlagProfile: old-ui
+  trafficClass: satellite
+  circulation:
+    minimumRunsPerWeek: 1
+    dormancyThresholdHours: 120
+  vitality:
+    targetScore: 0.6

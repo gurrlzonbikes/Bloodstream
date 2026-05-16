@@ -1,0 +1,45 @@
+# High-density traffic corridor configurations
+apiVersion: bloodstream.io/v1
+kind: BloodstreamConfig
+metadata:
+  name: chrome-latest
+  namespace: bloodstream
+spec:
+  browser: chromium
+  env: staging
+  trafficClass: corridor
+  circulation:
+    minimumRunsPerWeek: 50
+    dormancyThresholdHours: 12
+  vitality:
+    targetScore: 0.85
+---
+apiVersion: bloodstream.io/v1
+kind: BloodstreamConfig
+metadata:
+  name: default-feature-flags
+  namespace: bloodstream
+spec:
+  browser: chromium
+  featureFlagProfile: default
+  trafficClass: corridor
+  circulation:
+    minimumRunsPerWeek: 40
+    dormancyThresholdHours: 12
+  vitality:
+    targetScore: 0.85
+---
+apiVersion: bloodstream.io/v1
+kind: BloodstreamConfig
+metadata:
+  name: staging-env
+  namespace: bloodstream
+spec:
+  browser: chromium
+  env: staging
+  trafficClass: corridor
+  circulation:
+    minimumRunsPerWeek: 35
+    dormancyThresholdHours: 24
+  vitality:
+    targetScore: 0.8
