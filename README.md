@@ -18,17 +18,34 @@ This is not a test runner — it is a control plane for execution vitality, dorm
 ## Architecture
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│                  Bloodstream Control Plane                   │
-│  CRDs: BloodstreamConfig, BloodstreamPath                   │
-│  Operator: vitality reconciliation + Prometheus metrics      │
-│  Argo: circulation events (corridor / satellite / reconcile)│
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-┌──────────────────────────▼──────────────────────────────────┐
-│  Demo topology: frontend → auth → payments (+ flags/evolution)│
-│  Playwright circulation jobs per execution configuration       │
-└─────────────────────────────────────────────────────────────┘
+                   +----------------------+
+                   | Git / CI Events      |
+                   +----------+-----------+
+                              |
+                              v
+                  +-----------+------------+
+                  | Vitality Controller    |
+                  +-----------+------------+
+                              |
+          +-------------------+------------------+
+          |                                      |
+          v                                      v
++----------------------+          +---------------------------+
+| Vitality State Store |          | Argo Workflow Generator   |
++----------------------+          +---------------------------+
+          |                                      |
+          v                                      v
++-------------------------------------------------------------+
+| Kubernetes                                                   |
+| - Playwright executions                                      |
+| - Config circulation                                         |
+| - Synthetic traffic                                          |
++-------------------------------------------------------------+
+                              |
+                              v
+             +----------------------------------+
+             | Prometheus / Grafana             |
+             +----------------------------------+
 ```
 
 ## Quick start (local demo app)
