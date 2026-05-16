@@ -1,0 +1,171 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "title": "Configuration Vitality Heatmap",
+      "type": "heatmap",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "bloodstream_config_vitality",
+          "legendFormat": "{{config}} ({{traffic_class}})",
+          "refId": "A"
+        }
+      ],
+      "options": { "calculate": false, "cellGap": 1 },
+      "description": "Hot corridor configs vs cold dormant satellites"
+    },
+    {
+      "title": "Hot vs Cold Configs",
+      "type": "bargauge",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "topk(15, bloodstream_config_vitality)",
+          "legendFormat": "{{config}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "green", "value": 0.75 }
+            ]
+          },
+          "min": 0,
+          "max": 1
+        }
+      }
+    },
+    {
+      "title": "Traffic Density — Executions Over Time",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "rate(bloodstream_executions_total[5m])",
+          "legendFormat": "{{config}} ({{traffic_class}})",
+          "refId": "A"
+        },
+        {
+          "expr": "bloodstream_execution_density",
+          "legendFormat": "density {{config}}",
+          "refId": "B"
+        }
+      ],
+      "description": "Circulation imbalance — concentration in corridor configs"
+    },
+    {
+      "title": "Circulation Imbalance",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum by (traffic_class) (rate(bloodstream_executions_total[1h]))",
+          "legendFormat": "{{traffic_class}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Dormancy Pressure",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "targets": [
+        {
+          "expr": "bloodstream_dormancy_pressure",
+          "legendFormat": "{{config}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" } }
+      }
+    },
+    {
+      "title": "Drift Score — Dormant Decay",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "targets": [
+        {
+          "expr": "bloodstream_drift_score",
+          "legendFormat": "{{config}}",
+          "refId": "A"
+        },
+        {
+          "expr": "bloodstream_drift_pressure",
+          "legendFormat": "pressure {{config}}",
+          "refId": "B"
+        }
+      ],
+      "description": "Satellite configs accumulate drift when circulation stops"
+    },
+    {
+      "title": "Path Topology Vitality",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 8, "x": 0, "y": 24 },
+      "targets": [
+        {
+          "expr": "bloodstream_path_vitality",
+          "legendFormat": "{{path}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Reconciliation Latency",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 24 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(bloodstream_reconciliation_latency_seconds_bucket[5m])) by (le, config))",
+          "legendFormat": "p95 {{config}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Flake Pressure",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 28 },
+      "targets": [
+        {
+          "expr": "bloodstream_flake_pressure",
+          "legendFormat": "{{config}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Congestion Score",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 28 },
+      "targets": [
+        {
+          "expr": "bloodstream_congestion_score",
+          "legendFormat": "{{config}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["bloodstream", "verification", "circulation"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Bloodstream — Verification Circulation Topology",
+  "uid": "bloodstream-topology",
+  "version": 1
+}
