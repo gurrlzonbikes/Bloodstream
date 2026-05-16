@@ -18,41 +18,23 @@ This is not a test runner — it is a control plane for execution vitality, dorm
 ## Architecture
 
 ```text
-                   +----------------------+
-                   | Git / CI Events      |
-                   +----------+-----------+
-                              |
-                              v
-                  +-----------+------------+
-                  | Vitality Controller    |
-                  +-----------+------------+
-                              |
-          +-------------------+------------------+
-          |                                      |
-          v                                      v
-+----------------------+          +---------------------------+
-| Vitality State Store |          | Argo Workflow Generator   |
-+----------------------+          +---------------------------+
-          |                                      |
-          v                                      v
-+-------------------------------------------------------------+
-| Kubernetes                                                   |
-| - Playwright executions                                      |
-| - Config circulation                                         |
-| - Synthetic traffic                                          |
-+-------------------------------------------------------------+
-                              |
-                              v
-             +----------------------------------+
-             | Prometheus / Grafana             |
-             +----------------------------------+
+┌─────────────────────────────────────────────────────────────┐
+│                  Bloodstream Control Plane                   │
+│  CRDs · Operator · Argo circulation workflows · Grafana      │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+┌──────────────────────────▼──────────────────────────────────┐
+│  Circulation pod (bloodstream/circulation image)             │
+│  Clones Automation Panda Playwright ch.03 → playwright.dev   │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## Quick start (local demo app)
+## Quick start (local circulation test)
+
+Requires Docker (builds image, clones [awesome-web-testing-playwright](https://github.com/AutomationPanda/awesome-web-testing-playwright) inside):
 
 ```bash
-make demo          # docker compose — shop on :3000
-make test          # Playwright checkout-flow (chrome-latest)
+make test
 ```
 
 ## Quick start (Kubernetes)
@@ -67,9 +49,8 @@ make deploy        # build images, apply CRDs, operator, workflows
 Port-forwards:
 
 ```bash
-kubectl port-forward -n bloodstream svc/grafana 3000:3000      # admin / bloodstream
+kubectl port-forward -n bloodstream svc/grafana 3000:3000
 kubectl port-forward -n bloodstream svc/prometheus 9090:9090
-kubectl port-forward -n bloodstream-demo svc/demo-frontend 3000:80
 kubectl get bloodstreamconfigs -n bloodstream
 ```
 
@@ -78,6 +59,8 @@ kubectl get bloodstreamconfigs -n bloodstream
 **Corridor (high traffic):** `chrome-latest`, `default-feature-flags`, `staging-env`
 
 **Satellite (low traffic):** `safari`, `firefox`, `android-low-end`, `slow-network`, `feature-flag-alt-checkout`, `degraded-payment-provider`, `old-ui-version`
+
+Circulation runs [chapter-03 example tests](https://github.com/AutomationPanda/awesome-web-testing-playwright/blob/main/chapter-code/chapter-03/tests/example.spec.ts) against **https://playwright.dev** (outbound network only).
 
 ## Vitality model
 
@@ -89,37 +72,19 @@ Each config tracks:
 - `driftScore` — desync from evolving topology
 - `flakePressure` — recent failure rate
 
-Drift is **deterministic**: `driftGap × evolution + dormancy × topologyChangeActivity`.
-
-## Metrics
-
-```text
-bloodstream_config_vitality
-bloodstream_execution_density
-bloodstream_dormancy_pressure
-bloodstream_drift_score
-bloodstream_drift_pressure
-bloodstream_reconciliation_latency_seconds
-bloodstream_flake_pressure
-bloodstream_congestion_score
-bloodstream_executions_total
-bloodstream_path_vitality
-```
-
 ## Simulating decay locally
 
-With demo app + operator running:
+With operator running:
 
 ```bash
 make operator-dev   # terminal 1
-make simulate       # inject corridor traffic + evolution + dormant satellites
+make simulate       # inject corridor + dormant satellite traffic
 ```
 
 ## Project layout
 
 ```text
-demo-app/     Fake ecommerce + evolution service
-e2e/          Playwright circulation tests
+circulation/  Docker image — clones Panda ch.03, runs against playwright.dev
 operator/     CRDs, controller, vitality model, metrics
 deploy/       Kubernetes, Argo, Prometheus, Grafana
 scripts/      cluster-setup, build, deploy, simulate

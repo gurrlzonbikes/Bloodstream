@@ -35,20 +35,15 @@ spec:
         parameters:
           - name: config
       container:
-        image: bloodstream/e2e:latest
+        image: bloodstream/circulation:latest
         imagePullPolicy: IfNotPresent
         env:
           - name: BLOODSTREAM_CONFIG
             value: "{{inputs.parameters.config}}"
-          - name: BASE_URL
-            value: http://demo-frontend.bloodstream-demo.svc.cluster.local
-          - name: FLAGS_URL
-            value: http://demo-feature-flags.bloodstream-demo.svc.cluster.local:3003
-          - name: EVOLUTION_URL
-            value: http://demo-evolution.bloodstream-demo.svc.cluster.local:3004
+          - name: TRAFFIC_CLASS
+            value: satellite
           - name: METRICS_PUSH_URL
             value: http://bloodstream-operator.bloodstream.svc.cluster.local:9091/execution
-        command: [npx, playwright, test, tests/checkout-flow.spec.ts]
     - name: annotate-reconciliation
       inputs:
         parameters:

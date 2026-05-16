@@ -1,4 +1,4 @@
-.PHONY: cluster build deploy demo test simulate operator-dev
+.PHONY: cluster build deploy test simulate operator-dev
 
 cluster:
 	./scripts/cluster-setup.sh
@@ -9,11 +9,9 @@ build:
 deploy: build
 	./scripts/deploy.sh
 
-demo:
-	cd demo-app && docker compose up --build
-
 test:
-	cd e2e && npm install && npx playwright install chromium && BLOODSTREAM_CONFIG=chrome-latest npm test
+	docker build -t bloodstream/circulation:latest ./circulation
+	docker run --rm -e BLOODSTREAM_CONFIG=chrome-latest -e TRAFFIC_CLASS=corridor bloodstream/circulation:latest
 
 simulate:
 	./scripts/simulate-circulation.sh

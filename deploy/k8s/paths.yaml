@@ -1,13 +1,11 @@
 apiVersion: bloodstream.io/v1
 kind: BloodstreamPath
 metadata:
-  name: checkout-flow
+  name: playwright-docs
   namespace: bloodstream
 spec:
   services:
-    - frontend
-    - auth
-    - payments
+    - playwright.dev
   configs:
     - chrome-latest
     - default-feature-flags
