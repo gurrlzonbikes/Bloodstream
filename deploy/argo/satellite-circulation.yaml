@@ -1,0 +1,57 @@
+# Satellite circulation — low-frequency reconciliation pressure
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: satellite-circulation
+  namespace: bloodstream
+  labels:
+    bloodstream.io/event-type: circulation
+    bloodstream.io/traffic-class: satellite
+spec:
+  schedule: "0 */6 * * *"
+  timezone: UTC
+  concurrencyPolicy: Forbid
+  workflowSpec:
+    entrypoint: rotate-satellite
+    serviceAccountName: argo-workflow
+    templates:
+      - name: rotate-satellite
+        steps:
+          - - name: pick-satellite
+              template: circulation-event
+              arguments:
+                parameters:
+                  - name: config
+                    value: "{{item}}"
+              withItems:
+                - safari
+                - firefox
+                - android-low-end
+                - slow-network
+                - feature-flag-alt-checkout
+                - degraded-payment-provider
+                - old-ui-version
+      - name: circulation-event
+        inputs:
+          parameters:
+            - name: config
+        metadata:
+          labels:
+            bloodstream.io/circulation: "true"
+            bloodstream.io/traffic-class: satellite
+            bloodstream.io/config: "{{inputs.parameters.config}}"
+        container:
+          image: bloodstream/e2e:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: BLOODSTREAM_CONFIG
+              value: "{{inputs.parameters.config}}"
+            - name: BASE_URL
+              value: http://demo-frontend.bloodstream-demo.svc.cluster.local
+            - name: FLAGS_URL
+              value: http://demo-feature-flags.bloodstream-demo.svc.cluster.local:3003
+            - name: EVOLUTION_URL
+              value: http://demo-evolution.bloodstream-demo.svc.cluster.local:3004
+            - name: METRICS_PUSH_URL
+              value: http://bloodstream-operator.bloodstream.svc.cluster.local:9091/execution
+          command: [npx, playwright, test, tests/checkout-flow.spec.ts]

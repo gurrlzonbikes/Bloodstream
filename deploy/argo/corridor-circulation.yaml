@@ -1,0 +1,54 @@
+# High-density traffic corridor — frequent circulation events
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: corridor-circulation
+  namespace: bloodstream
+  labels:
+    bloodstream.io/event-type: circulation
+    bloodstream.io/traffic-class: corridor
+spec:
+  schedule: "*/30 * * * *"
+  timezone: UTC
+  concurrencyPolicy: Forbid
+  workflowSpec:
+    entrypoint: corridor-batch
+    serviceAccountName: argo-workflow
+    templates:
+      - name: corridor-batch
+        steps:
+          - - name: chrome-latest
+              template: circulation-event
+              arguments:
+                parameters: [{ name: config, value: chrome-latest }]
+            - name: default-feature-flags
+              template: circulation-event
+              arguments:
+                parameters: [{ name: config, value: default-feature-flags }]
+            - name: staging-env
+              template: circulation-event
+              arguments:
+                parameters: [{ name: config, value: staging-env }]
+      - name: circulation-event
+        inputs:
+          parameters:
+            - name: config
+        metadata:
+          labels:
+            bloodstream.io/circulation: "true"
+            bloodstream.io/config: "{{inputs.parameters.config}}"
+        container:
+          image: bloodstream/e2e:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: BLOODSTREAM_CONFIG
+              value: "{{inputs.parameters.config}}"
+            - name: BASE_URL
+              value: http://demo-frontend.bloodstream-demo.svc.cluster.local
+            - name: FLAGS_URL
+              value: http://demo-feature-flags.bloodstream-demo.svc.cluster.local:3003
+            - name: EVOLUTION_URL
+              value: http://demo-evolution.bloodstream-demo.svc.cluster.local:3004
+            - name: METRICS_PUSH_URL
+              value: http://bloodstream-operator.bloodstream.svc.cluster.local:9091/execution
+          command: [npx, playwright, test, tests/checkout-flow.spec.ts, --project=chrome-latest]

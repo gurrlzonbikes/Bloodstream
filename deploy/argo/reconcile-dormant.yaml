@@ -1,0 +1,78 @@
+# Reconciliation circulation — restores vitality to dormant configs
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: reconcile-dormant
+  namespace: bloodstream
+  labels:
+    bloodstream.io/event-type: reconciliation
+spec:
+  entrypoint: reconcile
+  arguments:
+    parameters:
+      - name: config
+        value: safari
+  templates:
+    - name: reconcile
+      inputs:
+        parameters:
+          - name: config
+      steps:
+        - - name: circulation
+            template: run-config
+            arguments:
+              parameters:
+                - name: config
+                  value: "{{workflow.parameters.config}}"
+        - - name: mark-reconciled
+            template: annotate-reconciliation
+            arguments:
+              parameters:
+                - name: config
+                  value: "{{workflow.parameters.config}}"
+    - name: run-config
+      inputs:
+        parameters:
+          - name: config
+      container:
+        image: bloodstream/e2e:latest
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: BLOODSTREAM_CONFIG
+            value: "{{inputs.parameters.config}}"
+          - name: BASE_URL
+            value: http://demo-frontend.bloodstream-demo.svc.cluster.local
+          - name: FLAGS_URL
+            value: http://demo-feature-flags.bloodstream-demo.svc.cluster.local:3003
+          - name: EVOLUTION_URL
+            value: http://demo-evolution.bloodstream-demo.svc.cluster.local:3004
+          - name: METRICS_PUSH_URL
+            value: http://bloodstream-operator.bloodstream.svc.cluster.local:9091/execution
+        command: [npx, playwright, test, tests/checkout-flow.spec.ts]
+    - name: annotate-reconciliation
+      inputs:
+        parameters:
+          - name: config
+      script:
+        image: bitnami/kubectl:latest
+        command: [bash]
+        source: |
+          kubectl annotate bloodstreamconfig {{inputs.parameters.config}} \
+            -n bloodstream \
+            bloodstream.io/last-reconciliation="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --overwrite || true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: dormant-reconciliation
+  namespace: bloodstream
+spec:
+  schedule: "0 8 * * *"
+  workflowSpec:
+    workflowTemplateRef:
+      name: reconcile-dormant
+    arguments:
+      parameters:
+        - name: config
+          value: safari
