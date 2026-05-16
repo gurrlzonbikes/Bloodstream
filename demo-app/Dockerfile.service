@@ -1,0 +1,10 @@
+FROM node:22-alpine
+WORKDIR /app
+COPY package.json ./
+COPY services ./services
+RUN cd services/auth && npm install --omit=dev 2>/dev/null; \
+    cd ../payments && npm install --omit=dev 2>/dev/null; \
+    cd ../feature-flags && npm install --omit=dev 2>/dev/null; \
+    cd ../evolution && npm install --omit=dev 2>/dev/null; \
+    cd ../frontend && npm install --omit=dev 2>/dev/null
+COPY package.json ./

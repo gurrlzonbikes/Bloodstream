@@ -1,0 +1,32 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports: ["3000:3000"]
+    environment:
+      AUTH_URL: http://auth:3001
+      PAYMENTS_URL: http://payments:3002
+      FLAGS_URL: http://feature-flags:3003
+      EVOLUTION_URL: http://evolution:3004
+    depends_on: [auth, payments, feature-flags, evolution]
+
+  auth:
+    build: { context: ., dockerfile: Dockerfile.service }
+    command: ["node", "services/auth/server.js"]
+    environment: { PORT: "3001", EVOLUTION_URL: http://evolution:3004 }
+
+  payments:
+    build: { context: ., dockerfile: Dockerfile.service }
+    command: ["node", "services/payments/server.js"]
+    environment: { PORT: "3002", EVOLUTION_URL: http://evolution:3004 }
+
+  feature-flags:
+    build: { context: ., dockerfile: Dockerfile.service }
+    command: ["node", "services/feature-flags/server.js"]
+    environment: { PORT: "3003" }
+
+  evolution:
+    build: { context: ., dockerfile: Dockerfile.service }
+    command: ["node", "services/evolution/server.js"]
+    environment: { PORT: "3004" }
